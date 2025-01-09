@@ -5,12 +5,18 @@ import (
 	"net/http"
 
 	api "github.com/hashiotoko/go-sample-app/backend/api/generated"
+	controllers "github.com/hashiotoko/go-sample-app/backend/interfaces/controllers"
 	validatorMiddleware "github.com/hashiotoko/go-sample-app/backend/middleware/validator"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/oapi-codegen/echo-middleware"
 )
+
+type Server struct {
+	*controllers.GreetingController
+	*controllers.UserController
+}
 
 const healthCheckPath = "/health"
 
@@ -33,6 +39,13 @@ func Init(router *echo.Echo) {
 		slog.Info("This service is healthy!")
 		return c.NoContent(http.StatusOK)
 	})
+
+	server := &Server{
+		GreetingController: controllers.NewGreetingController(),
+		UserController:     controllers.NewUserController(),
+	}
+
+	api.RegisterHandlers(router, server)
 }
 
 func setupOpenApiValidator(router *echo.Echo, swagger *openapi3.T) {
