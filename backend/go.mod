@@ -3,6 +3,7 @@ module github.com/hashiotoko/go-sample-app/backend
 go 1.23.3
 
 require (
+	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/labstack/echo/v4 v4.13.3
 )
