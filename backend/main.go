@@ -1,6 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
+
 	"github.com/hashiotoko/go-sample-app/backend/config"
 	"github.com/hashiotoko/go-sample-app/backend/infrastructure"
 	"github.com/labstack/echo/v4"
@@ -8,8 +12,15 @@ import (
 
 func main() {
 	config.LoadAppConfig()
-	println("config Environment: ", config.Config.Environment)
-	println("config LogLevel: ", config.Config.LogLevel)
+	// fmt.Printf("config: %+v\n", config.Config)
+	cj, err := json.MarshalIndent(config.Config, "", " ")
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	fmt.Println("config:", string(cj))
+
+	infrastructure.InitLogger()
+
 	router := echo.New()
 
 	infrastructure.Init(router)

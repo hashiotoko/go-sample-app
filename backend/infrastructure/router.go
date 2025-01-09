@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"log/slog"
 	"net/http"
 
 	validatorMiddleware "github.com/hashiotoko/go-sample-app/backend/middleware/validator"
@@ -22,6 +23,7 @@ func Init(router *echo.Echo) {
 	})
 
 	router.GET("/health", func(c echo.Context) error {
+		slog.Info("This service is healthy!")
 		return c.NoContent(http.StatusOK)
 	})
 }
