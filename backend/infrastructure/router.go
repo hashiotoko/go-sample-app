@@ -4,10 +4,15 @@ import (
 	"log/slog"
 	"net/http"
 
+	api "github.com/hashiotoko/go-sample-app/backend/api/generated"
 	validatorMiddleware "github.com/hashiotoko/go-sample-app/backend/middleware/validator"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/oapi-codegen/echo-middleware"
 )
+
+const healthCheckPath = "/health"
 
 func Init(router *echo.Echo) {
 	router.HideBanner = true
@@ -18,12 +23,23 @@ func Init(router *echo.Echo) {
 	// ref. https://echo.labstack.com/docs/request#validate-data
 	router.Validator = validatorMiddleware.New()
 
-	router.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
+	swagger, err := api.GetSwagger()
+	if err != nil {
+		panic(err)
+	}
+	setupOpenApiValidator(router, swagger)
 
-	router.GET("/health", func(c echo.Context) error {
+	router.GET(healthCheckPath, func(c echo.Context) error {
 		slog.Info("This service is healthy!")
 		return c.NoContent(http.StatusOK)
 	})
+}
+
+func setupOpenApiValidator(router *echo.Echo, swagger *openapi3.T) {
+	swagger.Servers = nil
+	router.Use(echoMiddleware.OapiRequestValidatorWithOptions(swagger, &echoMiddleware.Options{
+		Skipper: func(c echo.Context) bool {
+			return c.Request().RequestURI == healthCheckPath
+		},
+	}))
 }

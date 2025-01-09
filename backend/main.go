@@ -22,7 +22,7 @@ func main() {
 	infrastructure.InitLogger()
 
 	router := echo.New()
-
 	infrastructure.Init(router)
+
 	router.Start(":8888")
 }
