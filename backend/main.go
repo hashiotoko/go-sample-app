@@ -9,5 +9,5 @@ func main() {
 	router := echo.New()
 
 	infrastructure.Init(router)
-	router.Start(":8080")
+	router.Start(":8888")
 }
