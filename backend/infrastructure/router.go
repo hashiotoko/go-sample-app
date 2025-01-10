@@ -21,7 +21,7 @@ type Server struct {
 
 const healthCheckPath = "/health"
 
-func Init(router *echo.Echo, _dbClient db.Client) {
+func Init(router *echo.Echo, dbClient db.Client) {
 	router.HideBanner = true
 	// router.HidePort = true // サーバー起動時に port を表示しないようにする
 
@@ -43,7 +43,9 @@ func Init(router *echo.Echo, _dbClient db.Client) {
 
 	server := &Server{
 		GreetingController: controllers.NewGreetingController(),
-		UserController:     controllers.NewUserController(),
+		UserController: controllers.NewUserController(
+			dbClient,
+		),
 	}
 
 	api.RegisterHandlers(router, server)

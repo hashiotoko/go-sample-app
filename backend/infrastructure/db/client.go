@@ -10,6 +10,8 @@ import (
 
 	"github.com/hashiotoko/go-sample-app/backend/config"
 	"github.com/hashiotoko/go-sample-app/backend/database/sqlc"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Client interface {

@@ -2,40 +2,57 @@ package interfaces
 
 import (
 	"net/http"
+	"strconv"
 
 	api "github.com/hashiotoko/go-sample-app/backend/api/generated"
+	"github.com/hashiotoko/go-sample-app/backend/infrastructure/db"
+	repositories "github.com/hashiotoko/go-sample-app/backend/interfaces/repositories"
+	"github.com/hashiotoko/go-sample-app/backend/usecases"
+	"github.com/hashiotoko/go-sample-app/backend/usecases/dto"
 	"github.com/labstack/echo/v4"
 )
 
-type UserController struct{}
-
-var users = []api.User{
-	{
-		Id:   1,
-		Name: "田中太郎",
-	},
-	{
-		Id:   2,
-		Name: "山田次郎",
-	},
+type UserController struct {
+	Interactor usecases.UserInteractor
 }
 
-func NewUserController() *UserController {
-	return &UserController{}
+func NewUserController(dbClinet db.Client) *UserController {
+	interactor := usecases.NewUserInteractor(
+		repositories.NewUserRepository(dbClinet),
+	)
+	return &UserController{
+		Interactor: interactor,
+	}
 }
 
 func (c *UserController) GetApiV1Users(ctx echo.Context) error {
+	dtos, err := c.Interactor.GetUsers(ctx.Request().Context())
+	if err != nil {
+		return err
+	}
+	users := make([]api.User, 0)
+	for _, dto := range dtos {
+		tmp := convertUser(dto)
+		users = append(users, tmp)
+	}
+
 	return ctx.JSON(http.StatusOK, users)
 }
 
 func (c *UserController) GetApiV1UsersUserId(ctx echo.Context, userId int32) error {
-	for _, user := range users {
-		if user.Id == userId {
-			return ctx.JSON(http.StatusOK, user)
-		}
+	id := strconv.Itoa(int(userId))
+
+	dto, err := c.Interactor.GetUsersByID(ctx.Request().Context(), id)
+	if err != nil {
+		return err
 	}
 
-	return ctx.JSON(http.StatusNotFound, map[string]string{
-		"message": "user not found",
-	})
+	return ctx.JSON(http.StatusOK, convertUser(dto))
+}
+
+func convertUser(u dto.User) api.User {
+	return api.User{
+		Id:   u.ID,
+		Name: u.Name,
+	}
 }

@@ -6,12 +6,14 @@ require (
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/getkin/kin-openapi v0.128.0
 	github.com/go-playground/validator/v10 v10.23.0
+	github.com/go-sql-driver/mysql v1.8.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/oapi-codegen/echo-middleware v1.0.2
 	github.com/oapi-codegen/runtime v1.1.1
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect

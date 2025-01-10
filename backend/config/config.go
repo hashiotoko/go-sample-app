@@ -45,7 +45,7 @@ func LoadConfig() {
 // }
 
 type AppConfig struct {
-	Environment    string `env:"APP_ENV,required"`
+	// Environment    string `env:"APP_ENV,required"`
 	LogLevel       string `env:"LOG_LEVEL" envDefault:"debug"`
 	ServiceName    string `env:"SERVICE_NAME" envDefault:"backend"`
 	ServiceVersion string `env:"SERVICE_VERSION" envDefault:"0.0.0"`
