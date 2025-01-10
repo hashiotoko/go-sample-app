@@ -1,0 +1,21 @@
+services:
+  database:
+    container_name: go-sample-app-db
+    image: mysql:8.0.29
+    volumes:
+      - go-sample-app-db:/var/lib/mysql
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    tty: true
+    restart: always
+    ports:
+      - ${DB_PORT}:3306
+
+volumes:
+  go-sample-app-db:
+    driver: local
