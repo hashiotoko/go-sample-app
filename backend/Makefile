@@ -46,6 +46,11 @@ migrate/clean:
 	atlas schema clean \
 		-u ${MIGRATION_DB}
 
+.PHONY: sqlc/generate
+sqlc/generate:
+	@echo "Generating sqlc files"
+	sqlc generate -f ./database/sqlc.yml
+
 .PHONY: oapi-code-generate
 oapi-code-generate:
 	@echo "Generating api interfaces"

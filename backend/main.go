@@ -7,11 +7,12 @@ import (
 
 	"github.com/hashiotoko/go-sample-app/backend/config"
 	"github.com/hashiotoko/go-sample-app/backend/infrastructure"
+	"github.com/hashiotoko/go-sample-app/backend/infrastructure/db"
 	"github.com/labstack/echo/v4"
 )
 
 func main() {
-	config.LoadAppConfig()
+	config.LoadConfig()
 	// fmt.Printf("config: %+v\n", config.Config)
 	cj, err := json.MarshalIndent(config.Config, "", " ")
 	if err != nil {
@@ -22,7 +23,8 @@ func main() {
 	infrastructure.InitLogger()
 
 	router := echo.New()
-	infrastructure.Init(router)
+	dbClient := db.NewClient()
+	infrastructure.Init(router, dbClient)
 
 	router.Start(":8888")
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	api "github.com/hashiotoko/go-sample-app/backend/api/generated"
+	"github.com/hashiotoko/go-sample-app/backend/infrastructure/db"
 	controllers "github.com/hashiotoko/go-sample-app/backend/interfaces/controllers"
 	validatorMiddleware "github.com/hashiotoko/go-sample-app/backend/middleware/validator"
 
@@ -20,7 +21,7 @@ type Server struct {
 
 const healthCheckPath = "/health"
 
-func Init(router *echo.Echo) {
+func Init(router *echo.Echo, _dbClient db.Client) {
 	router.HideBanner = true
 	// router.HidePort = true // サーバー起動時に port を表示しないようにする
 
