@@ -7,12 +7,14 @@
     "compile": "tsp compile ./src/main.tsp",
     "dev": "tsp compile ./src/main.tsp --watch",
     "format": "tsp format ./src",
-    "format:check": "tsp format ./src --check"
+    "format:check": "tsp format ./src --check",
+    "lint": "redocly lint ./generated/openapi.yaml"
   },
   "devDependencies": {
+    "@redocly/cli": "^1.27.1",
     "@typespec/compiler": "^0.63.0",
     "@typespec/http": "^0.63.0",
-    "@typespec/openapi3": "^0.63.0",
-    "@typespec/rest": "^0.63.1"
+    "@typespec/openapi": "^0.63.0",
+    "@typespec/openapi3": "^0.63.0"
   }
 }

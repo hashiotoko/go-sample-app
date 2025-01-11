@@ -1,6 +1,8 @@
 openapi: 3.0.0
 info:
   title: go-sample-app
+  license:
+    name: private
   version: 0.0.0
 tags: []
 paths:
