@@ -25,12 +25,12 @@ func NewUserController(dbClinet db.Client) *UserController {
 	}
 }
 
-func (c *UserController) GetApiV1Users(ctx echo.Context) error {
+func (c *UserController) UsersGetUsers(ctx echo.Context) error {
 	dtos, err := c.Interactor.GetUsers(ctx.Request().Context())
 	if err != nil {
 		return err
 	}
-	users := make([]api.User, 0)
+	users := make([]api.ModelsUser, 0)
 	for _, dto := range dtos {
 		tmp := convertUser(dto)
 		users = append(users, tmp)
@@ -39,7 +39,7 @@ func (c *UserController) GetApiV1Users(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, users)
 }
 
-func (c *UserController) GetApiV1UsersUserId(ctx echo.Context, userId int32) error {
+func (c *UserController) UsersGetUser(ctx echo.Context, userId int32) error {
 	id := strconv.Itoa(int(userId))
 
 	dto, err := c.Interactor.GetUsersByID(ctx.Request().Context(), id)
@@ -50,8 +50,8 @@ func (c *UserController) GetApiV1UsersUserId(ctx echo.Context, userId int32) err
 	return ctx.JSON(http.StatusOK, convertUser(dto))
 }
 
-func convertUser(u dto.User) api.User {
-	return api.User{
+func convertUser(u dto.User) api.ModelsUser {
+	return api.ModelsUser{
 		Id:   u.ID,
 		Name: u.Name,
 	}

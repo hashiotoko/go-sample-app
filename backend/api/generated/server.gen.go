@@ -15,13 +15,13 @@ import (
 type ServerInterface interface {
 	// 挨拶
 	// (GET /api/v1/greeting)
-	GetApiV1Greeting(ctx echo.Context) error
+	GreetingGreeting(ctx echo.Context) error
 	// ユーザー一覧の取得
 	// (GET /api/v1/users)
-	GetApiV1Users(ctx echo.Context) error
+	UsersGetUsers(ctx echo.Context) error
 	// 特定のユーザーの取得
 	// (GET /api/v1/users/{userId})
-	GetApiV1UsersUserId(ctx echo.Context, userId int32) error
+	UsersGetUser(ctx echo.Context, userId int32) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -29,26 +29,26 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
-// GetApiV1Greeting converts echo context to params.
-func (w *ServerInterfaceWrapper) GetApiV1Greeting(ctx echo.Context) error {
+// GreetingGreeting converts echo context to params.
+func (w *ServerInterfaceWrapper) GreetingGreeting(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetApiV1Greeting(ctx)
+	err = w.Handler.GreetingGreeting(ctx)
 	return err
 }
 
-// GetApiV1Users converts echo context to params.
-func (w *ServerInterfaceWrapper) GetApiV1Users(ctx echo.Context) error {
+// UsersGetUsers converts echo context to params.
+func (w *ServerInterfaceWrapper) UsersGetUsers(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetApiV1Users(ctx)
+	err = w.Handler.UsersGetUsers(ctx)
 	return err
 }
 
-// GetApiV1UsersUserId converts echo context to params.
-func (w *ServerInterfaceWrapper) GetApiV1UsersUserId(ctx echo.Context) error {
+// UsersGetUser converts echo context to params.
+func (w *ServerInterfaceWrapper) UsersGetUser(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "userId" -------------
 	var userId int32
@@ -59,7 +59,7 @@ func (w *ServerInterfaceWrapper) GetApiV1UsersUserId(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetApiV1UsersUserId(ctx, userId)
+	err = w.Handler.UsersGetUser(ctx, userId)
 	return err
 }
 
@@ -91,8 +91,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/api/v1/greeting", wrapper.GetApiV1Greeting)
-	router.GET(baseURL+"/api/v1/users", wrapper.GetApiV1Users)
-	router.GET(baseURL+"/api/v1/users/:userId", wrapper.GetApiV1UsersUserId)
+	router.GET(baseURL+"/api/v1/greeting", wrapper.GreetingGreeting)
+	router.GET(baseURL+"/api/v1/users", wrapper.UsersGetUsers)
+	router.GET(baseURL+"/api/v1/users/:userId", wrapper.UsersGetUser)
 
 }

@@ -12,6 +12,6 @@ func NewGreetingController() *GreetingController {
 	return &GreetingController{}
 }
 
-func (c *GreetingController) GetApiV1Greeting(ctx echo.Context) error {
+func (c *GreetingController) GreetingGreeting(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, "Hello, world!")
 }
