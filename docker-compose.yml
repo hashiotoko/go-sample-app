@@ -15,6 +15,20 @@ services:
     restart: always
     ports:
       - ${DB_PORT}:3306
+  localstack:
+    container_name: go-sample-app-localstack
+    build:
+      context: ./aws-local
+      dockerfile: Dockerfile
+    environment:
+      - AWS_DEFAULT_REGION=ap-northeast-1
+      - SERVICES=sqs
+      - DEBUG=1
+    ports:
+      - "54566:4566"
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
 
 volumes:
   go-sample-app-db:
