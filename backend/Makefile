@@ -57,3 +57,8 @@ oapi-code-generate:
 	oapi-codegen -generate echo-server -package api ../api-spec/generated/openapi.yaml > api/generated/server.gen.go
 	oapi-codegen -generate types -package api ../api-spec/generated/openapi.yaml > api/generated/models.gen.go
 	oapi-codegen -generate spec -package api ../api-spec/generated/openapi.yaml > api/generated/spec.gen.go
+
+.PHONY: mock-generate
+mock-generate:
+	@echo "Generating mocks"
+	go generate ./...
