@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "tsp compile ./src/main.tsp",
     "dev": "tsp compile ./src/main.tsp --watch",
-    "format": "tsp format ./src",
+    "format": "tsp format ./src --debug",
     "format:check": "tsp format ./src --check",
     "lint": "redocly lint ./generated/openapi.yaml"
   },

@@ -34,6 +34,34 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Models.User'
+    post:
+      operationId: Users_createUser
+      summary: ユーザーの作成
+      description: ユーザーを作成する
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Responses.Api.V1.Users.CreateUserResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: ユーザー名
+                email_address:
+                  type: string
+                  description: メールアドレス
+              required:
+                - name
+                - email_address
   /api/v1/users/{userId}:
     get:
       operationId: Users_getUser
@@ -60,6 +88,7 @@ components:
       required:
         - id
         - name
+        - email_address
       properties:
         id:
           type: integer
@@ -68,9 +97,23 @@ components:
         name:
           type: string
           description: ユーザー名
+        email_address:
+          type: string
+          description: メールアドレス
       example:
         id: 1
         name: 田中太郎
+        email_address: user1@example.com
+    Responses.Api.V1.Users.CreateUserResponse:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          allOf:
+            - $ref: '#/components/schemas/Models.User'
+          description: ユーザー
+      description: ユーザー作成成功のレスポンス
 servers:
   - url: http://localhost:8888
     description: ローカル環境

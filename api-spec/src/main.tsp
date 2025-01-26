@@ -2,6 +2,7 @@ import "@typespec/http";
 import "@typespec/openapi";
 
 import "./models/index.tsp";
+import "./responses/index.tsp";
 import "./routes/index.tsp";
 
 using TypeSpec.Http;
