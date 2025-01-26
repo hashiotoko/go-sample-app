@@ -1,3 +1,5 @@
-h1:7Uv1NpbeW2IceDPJ7YedEU/2l2RxcVf31szeTTo23Ks=
+h1:UdOBaV8I/a9KRRQK3+4QMHgPCLGS8ffsn/UE4f7znTo=
 20250110024933_add-users.sql h1:MqRvsrr72HpIA0GgaaUlsm8MXoQxF7c7XnpR2jcRmgs=
 20250110025720_users-testdata.sql h1:jpUGEA21IQStA9cDLxJx1SF8QwY3bQX+69WNGrh8QZU=
+20250126051119_add-email-address-to-user.sql h1:g0WVL91WtjTE7yOsJpeCk+BH9QSDlOm3pMfnjmJJbeE=
+20250126051512_update-testdata-users-email-address.sql h1:QNZdJmtu1Lk1c6nHx7suEYX2kPI5WpdHPKnS62uQWrs=

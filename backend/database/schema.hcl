@@ -20,6 +20,12 @@ table "users" {
         comment = "ユーザー名前"
     }
 
+    column "email_address" {
+        null    = false
+        type    = varchar(255)
+        comment = "ユーザーのメールアドレス"
+    }
+
     column "created_at" {
         null    = false
         type    = timestamp
@@ -36,5 +42,9 @@ table "users" {
 
     primary_key {
         columns = [column.id]
+    }
+    index "email_address_idx" {
+        columns = [column.email_address]
+        comment = "メールアドレスインデックス"
     }
 }
