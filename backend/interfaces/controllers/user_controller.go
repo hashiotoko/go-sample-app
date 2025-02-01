@@ -50,9 +50,29 @@ func (c *UserController) UsersGetUser(ctx echo.Context, userId int32) error {
 	return ctx.JSON(http.StatusOK, convertUser(dto))
 }
 
+func (c *UserController) UsersCreateUser(ctx echo.Context) error {
+	var rawReq api.UsersCreateUserJSONBody
+	if err := ctx.Bind(&rawReq); err != nil {
+		return err
+	}
+
+	req := dto.CreateUserRequest{
+		Name: rawReq.Name,
+		EmailAddress: rawReq.EmailAddress,
+	}
+
+	user, err := c.Interactor.CreateUser(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(http.StatusCreated, convertUser(user))
+}
+
 func convertUser(u dto.User) api.ModelsUser {
 	return api.ModelsUser{
 		Id:   u.ID,
 		Name: u.Name,
+		EmailAddress: u.EmailAddress,
 	}
 }

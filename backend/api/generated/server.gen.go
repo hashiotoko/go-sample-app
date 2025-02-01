@@ -19,6 +19,9 @@ type ServerInterface interface {
 	// ユーザー一覧の取得
 	// (GET /api/v1/users)
 	UsersGetUsers(ctx echo.Context) error
+	// ユーザーの作成
+	// (POST /api/v1/users)
+	UsersCreateUser(ctx echo.Context) error
 	// 特定のユーザーの取得
 	// (GET /api/v1/users/{userId})
 	UsersGetUser(ctx echo.Context, userId int32) error
@@ -44,6 +47,15 @@ func (w *ServerInterfaceWrapper) UsersGetUsers(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.UsersGetUsers(ctx)
+	return err
+}
+
+// UsersCreateUser converts echo context to params.
+func (w *ServerInterfaceWrapper) UsersCreateUser(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UsersCreateUser(ctx)
 	return err
 }
 
@@ -93,6 +105,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.GET(baseURL+"/api/v1/greeting", wrapper.GreetingGreeting)
 	router.GET(baseURL+"/api/v1/users", wrapper.UsersGetUsers)
+	router.POST(baseURL+"/api/v1/users", wrapper.UsersCreateUser)
 	router.GET(baseURL+"/api/v1/users/:userId", wrapper.UsersGetUser)
 
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/hashiotoko/go-sample-app/backend/domain"
 	"github.com/hashiotoko/go-sample-app/backend/usecases/dto"
 	repository "github.com/hashiotoko/go-sample-app/backend/usecases/repository_interface"
+	repoDto "github.com/hashiotoko/go-sample-app/backend/usecases/repository_interface/dto"
 )
 
 type userInteractor struct {
@@ -16,6 +17,7 @@ type userInteractor struct {
 type UserInteractor interface {
 	GetUsers(ctx context.Context) ([]dto.User, error)
 	GetUsersByID(ctx context.Context, id string) (dto.User, error)
+	CreateUser(ctx context.Context, req dto.CreateUserRequest) (dto.User, error)
 }
 
 // var _ UserInteractor = &userInteractor{}
@@ -49,6 +51,20 @@ func (i *userInteractor) GetUsersByID(ctx context.Context, id string) (dto.User,
 	}
 	return convertUser(entity), nil
 }
+
+func (i *userInteractor) CreateUser(ctx context.Context, req dto.CreateUserRequest) (dto.User, error) {
+	repoReq := repoDto.CreateUserRequest{
+		Name:        req.Name,
+		EmailAddress: req.EmailAddress,
+	}
+	user, err := i.UserRepository.CreateUser(ctx, repoReq)
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to create user", "error", err)
+		return dto.User{}, err
+	}
+	return convertUser(user), nil
+}
+
 
 func convertUser(u domain.User) dto.User {
 	return dto.User{

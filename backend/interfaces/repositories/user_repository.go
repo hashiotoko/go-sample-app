@@ -9,6 +9,7 @@ import (
 	"github.com/hashiotoko/go-sample-app/backend/domain"
 	"github.com/hashiotoko/go-sample-app/backend/infrastructure/db"
 	repository "github.com/hashiotoko/go-sample-app/backend/usecases/repository_interface"
+	"github.com/hashiotoko/go-sample-app/backend/usecases/repository_interface/dto"
 )
 
 type UserRepository struct {
@@ -44,6 +45,37 @@ func (r *UserRepository) GetUsersByID(ctx context.Context, id string) (domain.Us
 	}
 
 	return convertUser(res), nil
+}
+
+func (r *UserRepository) CreateUser(ctx context.Context, req dto.CreateUserRequest) (domain.User, error) {
+	lastIDStr, err := r.DBClient.Conn().GetUserLastID(ctx)
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to get last user id", "error", err)
+		return domain.User{}, err
+	}
+	lastID, err := strconv.Atoi(lastIDStr)
+	id := strconv.Itoa(lastID + 1)
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to convert id", "error", err)
+		return domain.User{}, err
+	}
+
+	err = r.DBClient.Conn().InsertUser(ctx, sqlc.InsertUserParams{
+		ID: id,
+		Name: req.Name,
+		EmailAddress: req.EmailAddress,
+	})
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to create user", "error", err)
+		return domain.User{}, err
+	}
+
+	user, err := r.GetUsersByID(ctx, id)
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	return user, nil
 }
 
 func convertUser(u sqlc.User) domain.User {
