@@ -1,11 +1,9 @@
 package sqs
 
-//go:generate mockgen -source=$GOFILE -destination=mock/$GOFILE
-
 import (
 	"context"
+	"fmt"
 	"log/slog"
-	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -13,28 +11,33 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	appCfg "github.com/hashiotoko/go-sample-app/backend/config"
+	interfaces "github.com/hashiotoko/go-sample-app/backend/interfaces/clients"
 )
 
-type Client interface {
-	SendMessage(ctx context.Context, queueUrl string, message string) error
-	SendBatchMessages(ctx context.Context, queueUrl string, messages []string) error
-}
+// AWS SQSの仕様として1回のリクエストで送信できる最大メッセージ数は10
+// ref. https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessageBatch.html
+const MaxSendMessagesBatchSize int = 10
 
 type client struct {
-	Client *sqs.Client
+	Client    *sqs.Client
+	QueueURLs map[string]*string
 }
 
-func NewClient() Client {
+func NewClient() interfaces.MessageQueueClient {
+	awsUrl := appCfg.Config.AWS.URL
 	region := appCfg.Config.AWS.Region
-	endpoint := appCfg.Config.AWS.URL
 
 	var cfg aws.Config
+	opts := []func(*sqs.Options){}
 	var err error
-	if endpoint != "" {
+	if awsUrl != "" {
+		opts = append(opts, func(o *sqs.Options) {
+			o.BaseEndpoint = aws.String(awsUrl)
+		})
+
 		cfg, err = config.LoadDefaultConfig(
 			context.TODO(),
 			config.WithRegion(region),
-			config.WithBaseEndpoint(endpoint),
 			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 				"test",
 				"test",
@@ -49,43 +52,102 @@ func NewClient() Client {
 	}
 
 	if err != nil {
-		slog.Error("failed to get SQS client config", "error", err)
+		slog.Error("failed to load SQS client config", "error", err)
 		panic(err)
 	}
 
-	return client{
-		Client: sqs.NewFromConfig(cfg),
+	return &client{
+		Client:    sqs.NewFromConfig(cfg, opts...),
+		QueueURLs: make(map[string]*string),
 	}
 }
 
-func (c client) SendMessage(ctx context.Context, queueURL string, message string) error {
-	_, err := c.Client.SendMessage(ctx, &sqs.SendMessageInput{
-		MessageBody: aws.String(message),
-		QueueUrl:    aws.String(queueURL),
-	})
+func (c *client) SendMessage(ctx context.Context, queueName string, message interfaces.Message) error {
+	url, err := c.getQueueUrl(ctx, queueName)
 	if err != nil {
-		slog.Error("failed to send message", "error", err)
 		return err
 	}
+
+	_, err = c.Client.SendMessage(ctx, &sqs.SendMessageInput{
+		MessageBody: aws.String(message.Payload),
+		QueueUrl:    url,
+	})
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to send message", "queueName", queueName, "message_id", message.ID, "error", err)
+		return fmt.Errorf("failed to send message: %w", err)
+	}
+	slog.InfoContext(ctx, "successfully sent message", "queueName", queueName, "message_id", message.ID)
 	return nil
 }
 
-func (c client) SendBatchMessages(ctx context.Context, queueURL string, messages []string) error {
+func (c *client) SendMessages(ctx context.Context, queueName string, messages []interfaces.Message) error {
+	// ここではキューの存在チェックとURLのキャッシュのみ行う
+	_, err := c.getQueueUrl(ctx, queueName)
+	if err != nil {
+		return err
+	}
+
+	if len(messages) == 0 {
+		slog.WarnContext(ctx, "no messages to send", "queueName", queueName)
+		return nil
+	}
+
+	for i := 0; i < len(messages); i += MaxSendMessagesBatchSize {
+		end := i + MaxSendMessagesBatchSize
+		if end > len(messages) {
+			end = len(messages)
+		}
+
+		err := c.sendMessageBatch(ctx, queueName, messages[i:end])
+		if err != nil {
+			return err
+		}
+	}
+	slog.InfoContext(ctx, "successfully sent messages", "queueName", queueName)
+
+	return nil
+}
+
+func (c *client) getQueueUrl(ctx context.Context, queueName string) (*string, error) {
+	if url, ok := c.QueueURLs[queueName]; ok {
+		return url, nil
+	}
+
+	res, err := c.Client.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{QueueName: aws.String(queueName)})
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to get queue url", "queueName", queueName, "error", err)
+		return nil, fmt.Errorf("failed to get queue url(queueName: %v): %w", queueName, err)
+	}
+
+	c.QueueURLs[queueName] = res.QueueUrl
+	return res.QueueUrl, nil
+}
+
+func (c *client) sendMessageBatch(ctx context.Context, queueName string, messages []interfaces.Message) error {
+	url, _ := c.getQueueUrl(ctx, queueName) // エラーはこの関数を使う側でチェック済みのため無視
 	entries := make([]types.SendMessageBatchRequestEntry, 0, len(messages))
-	for i, message := range messages {
+	for _, entry := range messages {
 		entries = append(entries, types.SendMessageBatchRequestEntry{
-			Id:          aws.String(strconv.Itoa(i)),
-			MessageBody: aws.String(message),
+			Id:          aws.String(entry.ID),
+			MessageBody: aws.String(entry.Payload),
 		})
 	}
 
-	_, err := c.Client.SendMessageBatch(ctx, &sqs.SendMessageBatchInput{
+	res, err := c.Client.SendMessageBatch(ctx, &sqs.SendMessageBatchInput{
 		Entries:  entries,
-		QueueUrl: aws.String(queueURL),
+		QueueUrl: url,
 	})
 	if err != nil {
-		slog.Error("failed to send batch messages", "error", err)
-		return err
+		slog.ErrorContext(ctx, "failed to send messages", "queueName", queueName, "error", err)
+		return fmt.Errorf("failed to send messages(queueName: %v): %w", queueName, err)
 	}
+
+	for _, success := range res.Successful {
+		slog.InfoContext(ctx, "successfully sent message", "queueName", queueName, "message_id", aws.ToString(success.Id))
+	}
+	for _, failed := range res.Failed {
+		slog.ErrorContext(ctx, "failed to send message", "queueName", queueName, "message_id", aws.ToString(failed.Id), "error", aws.ToString(failed.Message))
+	}
+
 	return nil
 }
