@@ -1,0 +1,18 @@
+name: Auto Assign Asignee
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  main:
+    if: endsWith(github.actor, '[bot]') == false && github.event.pull_request.assignee == null
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      repository-projects: read
+    steps:
+      - name: Assign assignees
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr edit ${{ github.event.number }} --add-assignee ${{ github.actor }} --repo ${{ github.repository }}
